@@ -14,6 +14,15 @@ const adapter = new FileSync(dbFile)
 const db = lowdb(adapter)
 const app = express();
 
+// setup the simple datastore for the access/refresh tokens
+db.defaults({
+  token: {
+    accessToken: null,
+    refreshToken: null,
+    expiration: null,
+  },
+}).write();
+
 app.set('view engine', 'pug');
 
 const fetch = (...args) => {
@@ -35,7 +44,7 @@ const postJson = (url, data) => (
 app.get('/', async (req, res) => {
   // if we dont have an access token then we should
   // start the oauth process with a redirect to chms oauth
-  const token = await db.get('token');
+  const token = db.get('token');
   res.render('index');
 })
 
@@ -52,33 +61,25 @@ app.get('/auth', async (req, res) => {
     grant_type: 'authorization_code'
   });
 
+  console.log('RESPONSE', result);
+
   if (result.ok) {
     const data = await result.json();
+    console.log('OK', data)
     await db.set('token', {
       accessToken: data.access_token,
       refreshToken: data.refresh_token,
     }).write();
     res.redirect('/');
   } else {
-    res.send(await result.text());
+    const data = await result.text();
+    console.log('ERROR', data)
     res.status(500);
     res.end();
   }
 })
 
-// initialize the application
-(async function() {
-  // setup the simple datastore for the access/refresh tokens
-  await db.defaults({
-    token: {
-      accessToken: null,
-      refreshToken: null,
-      expiration: null,
-    },
-  }).write();
-
-  // start the app
-  app.listen(port, () => {
-    console.log(`App running on http://localhost:${port}`);
-  });
-})
+// start the app
+app.listen(port, () => {
+  console.log(`App running on http://localhost:${port}`);
+});
