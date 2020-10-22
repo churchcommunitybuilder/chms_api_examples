@@ -15,6 +15,8 @@ plugins {
 repositories {
     // Use JCenter for resolving dependencies.
     jcenter()
+    mavenCentral()
+    google()
 }
 
 dependencies {
@@ -26,6 +28,11 @@ dependencies {
 
     // This dependency is used by the application.
     implementation 'com.google.guava:guava:29.0-jre'
+
+    // https://developers.google.com/api-client-library/java/google-oauth-java-client/setup#google-oauth-client
+    implementation 'com.google.oauth-client:google-oauth-client:1.30.4'
+    implementation 'com.google.oauth-client:google-oauth-client-java6:1.30.4'
+    implementation 'com.google.oauth-client:google-oauth-client-jetty:1.30.4'
 }
 
 application {
