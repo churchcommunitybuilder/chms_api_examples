@@ -36,6 +36,9 @@ dependencies {
     implementation 'com.google.oauth-client:google-oauth-client:1.31.1'
     implementation 'com.google.oauth-client:google-oauth-client-java6:1.31.1'
     implementation 'com.google.oauth-client:google-oauth-client-jetty:1.31.1'
+
+    // https://github.com/stleary/JSON-java
+    implementation 'org.json:json:20200518'
 }
 
 java {
