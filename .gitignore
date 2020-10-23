@@ -1,2 +1,6 @@
 db.json
 node_modules
+
+# Python stuff
+.mypy_cache
+__pycache__

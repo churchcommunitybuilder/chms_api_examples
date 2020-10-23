@@ -1,0 +1,10 @@
+{% extends 'layout.html' %}
+{% block title %}Request Integration{% endblock %}
+{% block body %}
+<div class="content">
+  <p>Connect to Church Community Builder?</p>
+  <form action="/integrations" method="post">
+    <input type="submit" name="submit" value="Start Integration" />
+  </form>
+</div>
+{% endblock %}

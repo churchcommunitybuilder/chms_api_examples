@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <title>{% block title %}{% endblock %}</title>
+    <style>
+      * { font-family: helvetica, arial; font-size: 12pt; color: #444 }
+      html, body { background-color: #ddd; }
+      .content { background-color: #fff; width: 740px; margin: 50px auto; padding: 12px }
+      table { width: 100%; }
+      th { font-weight: normal; text-align: left; }
+      th, td { padding: 8px; }
+      table, thead, tbody, tfoot, tr, th, td { border: 1px solid #222; border-collapse: collapse; border-width: 1px 0; }
+      .paging { display: flex; flex-direction: row; margin: 25px 0; }
+      .paging > div { flex: 1; text-align: center; }
+    </style>
+    {% block head %}{% endblock %}
+  </head>
+  <body>
+    {% block body %}{% endblock %}
+  </body>
+</html>
