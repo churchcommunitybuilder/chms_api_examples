@@ -1,5 +1,5 @@
 install:
-	pip install -r requirements.txt
+	pip3 install -r requirements.txt
 
 run:
 	FLASK_APP=server.py flask run --port=8080

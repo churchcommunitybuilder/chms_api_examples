@@ -2,7 +2,6 @@ require('dotenv').config();
 const querystring = require('querystring');
 const nodeFetch = require('node-fetch');
 const express = require('express');
-const open = require('open');
 const lowdb = require('lowdb')
 const FileSync = require('lowdb/adapters/FileSync')
 
