@@ -21,7 +21,7 @@ public class App {
     private Credential credentials;
 
     public App(HttpTransport transport, Credential credentials) {
-        this.transport = Preconditions.checkNotNull(transport, "transport must not be null"); // TODO unit test
+        this.transport = Preconditions.checkNotNull(transport, "transport must not be null");
         this.credentials = Preconditions.checkNotNull(credentials, "credentials must not be null");
     }
 
