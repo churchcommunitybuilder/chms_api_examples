@@ -49,7 +49,7 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass = 'com.churchcommunitybuilder.App'
+    mainClass = 'com.churchcommunitybuilder.Main'
 }
 
 jar {

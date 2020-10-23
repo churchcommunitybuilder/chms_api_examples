@@ -4,23 +4,16 @@ import com.google.api.client.auth.oauth2.ClientParametersAuthentication;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.UrlEncodedContent;
 import com.google.api.client.http.json.JsonHttpContent;
-import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.Data;
-import com.google.common.base.Preconditions;
 
 import java.io.IOException;
 import java.util.Map;
 
 public class ClientJsonAuthentication extends ClientParametersAuthentication {
 
-    private final JsonFactory jsonFactory;
-    private final String subdomain;
-
-    public ClientJsonAuthentication(JsonFactory jsonFactory, String clientId, String clientSecret, String subdomain) {
+    public ClientJsonAuthentication(String clientId, String clientSecret) {
         super(clientId, clientSecret);
-
-        this.jsonFactory = Preconditions.checkNotNull(jsonFactory, "jsonFactory must not be null"); // TODO cover with unit test
-        this.subdomain = Preconditions.checkNotNull(subdomain, "subdomain must not be null"); // TODO cover with unit test
     }
 
     @Override
@@ -29,20 +22,11 @@ public class ClientJsonAuthentication extends ClientParametersAuthentication {
 
         Accept.accept(request);
 
+        var jsonFactory = JacksonFactory.getDefaultInstance();
         var content = UrlEncodedContent.getContent(request);
         Map<String, Object> data = Data.mapOf(content.getData());
-        data.put("grant_type", "authorization_code");
-        data.put("subdomain", subdomain);
-
-        var jsonContent = new JsonHttpContent(this.jsonFactory, data);
+        var jsonContent = new JsonHttpContent(jsonFactory, data);
         request.setContent(jsonContent);
-    }
-
-    /**
-     * @return the subdomain
-     */
-    public String getSubdomain() {
-        return subdomain;
     }
 
 }
