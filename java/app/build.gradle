@@ -35,9 +35,24 @@ dependencies {
     implementation 'com.google.oauth-client:google-oauth-client-jetty:1.30.4'
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(10)
+    }
+}
+
 application {
     // Define the main class for the application.
     mainClass = 'com.churchcommunitybuilder.App'
+}
+
+jar {
+    manifest {
+        attributes(
+            'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+            'Main-Class': application.mainClass
+        )
+    }
 }
 
 tasks.named('test') {
