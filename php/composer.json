@@ -1,0 +1,15 @@
+{
+    "name": "chms_api_examples/php",
+    "require": {
+        "slim/slim": "^4.5",
+        "slim/psr7": "^1.2",
+        "guzzlehttp/guzzle": "^7.2",
+        "vlucas/phpdotenv": "^5.2",
+        "league/oauth2-client": "^2.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "CCB\\": ["src/"]
+        }
+    }
+}
