@@ -15,6 +15,9 @@ class CCBProvider extends AbstractProvider
 
     private $client;
 
+    protected $apiDomain = 'https://api.ccbchurch.com';
+    protected $oauthAppDomain = 'https://oauth.ccbchurch.com';
+
     public function __construct(array $options = [], array $collaborators = [])
     {
         $requestFactory = new CCBRequestFactory();
@@ -92,17 +95,17 @@ class CCBProvider extends AbstractProvider
 
     public function getBaseAuthorizationUrl()
     {
-        return 'https://oauth.ccbchurch.com/oauth/authorize';
+        return "https://{$this->oauthAppDomain}/oauth/authorize";
     }
 
     public function getBaseAccessTokenUrl(array $params)
     {
-        return 'https://api.ccbchurch.com/oauth/token';
+        return "https://{$this->apiDomain}/oauth/token";
     }
 
     public function getResourceOwnerDetailsUrl(AccessToken $token)
     {
-        return 'https://api.ccbchurch.com/me';
+        return "https://{$this->apiDomain}/me";
     }
 
     protected function getDefaultScopes()
@@ -133,5 +136,25 @@ class CCBProvider extends AbstractProvider
     protected function createResourceOwner(array $response, AccessToken $token)
     {
         return null;
+    }
+
+    public function getApiDomain()
+    {
+        return $this->apiDomain;
+    }
+
+    public function setApiDomain(string $apiDomain)
+    {
+        $this->apiDomain = $apiDomain;
+    }
+
+    public function getOAuthAppDomain()
+    {
+        return $this->oauthAppDomain;
+    }
+
+    public function setOAuthAppDomain(string $oauthAppDomain)
+    {
+        $this->oauthAppDomain = $oauthAppDomain;
     }
 }
