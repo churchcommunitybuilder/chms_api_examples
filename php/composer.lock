@@ -4,8 +4,55 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fad4a3c8c947391c73fc0e8844a849e7",
+    "content-hash": "011598e58fd90ebd707400afd5fc9d62",
     "packages": [
+        {
+            "name": "dkoehn/oauth2-ccb",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dkoehn/oauth2-ccb.git",
+                "reference": "69e0dd39ebd0da3185973e7bda466b8cafeba5a4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/dkoehn/oauth2-ccb/zipball/69e0dd39ebd0da3185973e7bda466b8cafeba5a4",
+                "reference": "69e0dd39ebd0da3185973e7bda466b8cafeba5a4",
+                "shasum": ""
+            },
+            "require": {
+                "guzzlehttp/guzzle": "^7.2",
+                "league/oauth2-client": "^2.6"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Dkoehn\\CCB\\OAuth2\\Client\\": "src/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "Church Community Builder OAuth 2.0 Client Provider for The PHP League OAuth2-Client",
+            "keywords": [
+                "authorisation",
+                "authorization",
+                "ccb",
+                "client",
+                "oauth",
+                "oauth2"
+            ],
+            "support": {
+                "source": "https://github.com/dkoehn/oauth2-ccb/tree/main",
+                "issues": "https://github.com/dkoehn/oauth2-ccb/issues"
+            },
+            "time": "2020-11-13T21:58:43+00:00"
+        },
         {
             "name": "fig/http-message-util",
             "version": "1.1.4",
@@ -1446,7 +1493,9 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "dkoehn/oauth2-ccb": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],

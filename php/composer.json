@@ -1,15 +1,18 @@
 {
     "name": "chms_api_examples/php",
+    "repositories": [
+		{
+			"type": "vcs",
+			"url": "https://github.com/dkoehn/oauth2-ccb"
+        }
+    ],
     "require": {
         "slim/slim": "^4.5",
         "slim/psr7": "^1.2",
-        "guzzlehttp/guzzle": "^7.2",
         "vlucas/phpdotenv": "^5.2",
-        "league/oauth2-client": "^2.6"
+        "dkoehn/oauth2-ccb": "dev-main"
     },
-    "autoload": {
-        "psr-4": {
-            "CCB\\": ["src/"]
-        }
+    "scripts": {
+        "start": "php -S 127.0.0.1:3000 -t server/"
     }
 }
