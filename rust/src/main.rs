@@ -2,19 +2,14 @@
 extern crate dotenv_codegen;
 extern crate dotenv;
 
-use reqwest::{Url, Error};
+use reqwest::Url;
 use serde::{Deserialize, Serialize};
 use tide::utils::After;
 use tide::{Body, Redirect, Request, Response, StatusCode};
-use serde::de::DeserializeOwned;
 
-struct Env {
-  client_id: String,
-  client_secret: String,
-  subdomain: String,
-}
+mod utils;
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Debug)]
 struct TokenResponse {
   access_token: String,
   token_type: String,
@@ -38,59 +33,58 @@ struct AuthCodeBody {
   code: String,
 }
 
-const AUTH_CODE_URL: &str = "https://oauth.ccbchurch.com/oauth/authorize";
-const TOKEN_URL: &str = "https://api.ccbchurch.com/oauth/token";
-const REDIRECT_URL: &str = "http://localhost:3000/auth";
-
-fn get_env() -> Env {
-  Env {
-    client_id: String::from(dotenv!("CLIENT_ID")),
-    client_secret: String::from(dotenv!("CLIENT_SECRET")),
-    subdomain: String::from(dotenv!("SUBDOMAIN")),
-  }
+static mut TOKENS: Option<TokenResponse> = None;
+unsafe fn set_tokens(new_tokens: TokenResponse) {
+  TOKENS = Some(new_tokens)
 }
 
-fn post_json<T: Serialize, R: DeserializeOwned>(json_body: &T) -> Result<R, Error> {
-  let json_response = reqwest::blocking::Client::new()
-    .post(TOKEN_URL)
-    .json(&json_body)
-    .header("Content-Type", "application/json")
-    .header("Accept", "application/vnd.ccbchurch.v2+json")
-    .send()?
-    .json::<R>()?;
-
-    Ok(json_response)
-}
-
-async fn index(_: Request<()>) -> tide::Result {
-  let env = get_env();
+async fn index(_: Request<()>) -> tide::Result<Response> {
+  let env = utils::env::get_env();
   let url = Url::parse_with_params(
-    AUTH_CODE_URL,
+    utils::api::AUTH_CODE_URL,
     &[
       ("client_id", env.client_id),
       ("subdomain", env.subdomain),
-      ("redirect_uri", REDIRECT_URL.into()),
+      ("redirect_uri", utils::api::REDIRECT_URL.into()),
       ("response_type", String::from("code")),
     ],
   )?;
 
-  Ok(Redirect::new(url).into())
+  unsafe {
+    match &TOKENS {
+      Some(tk) => {
+        let individuals_json =
+          utils::api::get::<serde_json::Value>(&utils::api::make_api_url("individuals"), &tk.access_token)?;
+
+        Ok(Response::from(Body::from_json(&individuals_json)?))
+      }
+      None => Ok(Redirect::new(url).into()),
+    }
+  }
 }
 
-async fn handle_auth_code(req: Request<()>) -> tide::Result<Body> {
-  let env = get_env();
+async fn handle_auth_code(req: Request<()>) -> tide::Result {
+  let env = utils::env::get_env();
   let params: AuthCodeParams = req.query()?;
   let body = AuthCodeBody {
     grant_type: String::from("authorization_code"),
-    redirect_uri: REDIRECT_URL.into(),
+    redirect_uri: utils::api::REDIRECT_URL.into(),
     subdomain: env.subdomain.into(),
     client_id: env.client_id.into(),
     client_secret: env.client_secret.into(),
     code: params.code,
   };
-  let token_response = post_json::<AuthCodeBody, TokenResponse>(&body)?;
 
-  Ok(Body::from_json(&token_response)?)
+  let response = utils::api::post::<AuthCodeBody, TokenResponse>(
+    &utils::api::make_api_url("oauth/token"),
+    &body,
+  )?;
+
+  unsafe {
+    set_tokens(response);
+  }
+
+  Ok(Redirect::new("/").into())
 }
 
 #[async_std::main]
@@ -102,7 +96,6 @@ async fn main() -> tide::Result<()> {
       let msg = format!("Error: {:?}", err);
       res.set_status(StatusCode::InternalServerError);
       res.set_body(msg);
-
     };
 
     Ok(res)

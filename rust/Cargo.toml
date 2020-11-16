@@ -10,6 +10,7 @@ edition = "2018"
 tide = "0.15.0"
 reqwest = { version = "0.10", features = ["json", "blocking"] }
 serde = "1.0.117"
+serde_json = "1.0.59"
 async-std = { version = "1.7.0", features = ["attributes"] }
 dotenv = "0.15.0"
 dotenv_codegen = "0.15.0"

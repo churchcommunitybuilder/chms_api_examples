@@ -1482,6 +1482,7 @@ dependencies = [
  "dotenv_codegen",
  "reqwest",
  "serde",
+ "serde_json",
  "tide",
 ]
 
