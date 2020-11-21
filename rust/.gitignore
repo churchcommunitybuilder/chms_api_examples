@@ -1,2 +1,4 @@
 target
 .env
+db_data.ron
+.vscode
