@@ -18,6 +18,7 @@ use utils::{api, env};
 #[derive(Deserialize)]
 struct AuthCodeParams {
   code: String,
+  state: String,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -38,7 +39,7 @@ struct RefreshTokenBody {
   client_secret: String,
 }
 
-fn build_auth_code_redirect_url() -> std::result::Result<Url, ParseError> {
+fn build_auth_code_redirect_url(return_url: String) -> std::result::Result<Url, ParseError> {
   let env = env::get_env();
 
   Url::parse_with_params(
@@ -48,6 +49,7 @@ fn build_auth_code_redirect_url() -> std::result::Result<Url, ParseError> {
       ("subdomain", env.subdomain),
       ("redirect_uri", api::REDIRECT_URL.into()),
       ("response_type", String::from("code")),
+      ("state", return_url),
     ],
   )
 }
@@ -78,12 +80,11 @@ fn build_refresh_token_body(refresh_token: String) -> RefreshTokenBody {
 
 fn perform_refresh(db: &TokenDatabase) -> Result<String> {
   let body = build_refresh_token_body(db.get_refresh_token().unwrap());
-  let response = api::post::<RefreshTokenBody, TokenResponse>(
-    &api::make_api_url("oauth/token"),
-    &body,
-  )?;
+  let response =
+    api::post::<RefreshTokenBody, TokenResponse>(&api::make_api_url("oauth/token"), &body)?;
 
   db.handle_token_response(&response)?;
+  println!("Tokens refreshed.");
 
   Ok(response.access_token)
 }
@@ -99,12 +100,16 @@ fn access_token_middleware<'a>(
 
     match request.state().get_access_token() {
       Some(access_token) => {
-        tide::log::trace!("access token found", { access_token: access_token });
         request.set_ext(access_token);
 
         Ok(next.run(request).await)
       }
-      None => Ok(Redirect::new(build_auth_code_redirect_url()?).into()),
+      None => {
+        println!("Missing auth tokens. Redirecting to auth url.");
+        let url_path = request.url().path();
+
+        Ok(Redirect::new(build_auth_code_redirect_url(url_path.into())?).into())
+      }
     }
   })
 }
@@ -112,14 +117,12 @@ fn access_token_middleware<'a>(
 async fn auth_code_handler(req: Request<TokenDatabase>) -> tide::Result {
   let params: AuthCodeParams = req.query()?;
   let body = build_auth_code_body(params.code);
-  let response = api::post::<AuthCodeBody, TokenResponse>(
-    &api::make_api_url("oauth/token"),
-    &body,
-  )?;
-
+  let response =
+    api::post::<AuthCodeBody, TokenResponse>(&api::make_api_url("oauth/token"), &body)?;
   req.state().handle_token_response(&response)?;
+  println!("Auth code successfully exchanged for tokens.");
 
-  Ok(Redirect::new("/api/individuals").into())
+  Ok(Redirect::new(params.state).into())
 }
 
 async fn api_passthrough_handler(request: Request<TokenDatabase>) -> tide::Result<Response> {
