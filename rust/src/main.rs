@@ -5,22 +5,15 @@ extern crate dotenv;
 mod db;
 mod utils;
 
-use db::TokenDatabase;
+use db::{TokenDatabase, TokenResponse};
 use reqwest::Url;
 use serde::{Deserialize, Serialize};
 use std::future::Future;
 use std::pin::Pin;
+use tide::http::url::ParseError;
 use tide::utils::After;
 use tide::{Body, Next, Redirect, Request, Response, Result};
-
-#[derive(Deserialize, Serialize, Debug)]
-struct TokenResponse {
-  access_token: String,
-  token_type: String,
-  expires_in: u32,
-  scope: String,
-  refresh_token: String,
-}
+use utils::{api, env};
 
 #[derive(Deserialize)]
 struct AuthCodeParams {
@@ -45,68 +38,54 @@ struct RefreshTokenBody {
   client_secret: String,
 }
 
-fn perform_refresh(db: &TokenDatabase) -> Result<String> {
-  let env = utils::env::get_env();
-  let body = RefreshTokenBody {
-    refresh_token: db.get_refresh_token().unwrap(),
-    grant_type: String::from("refresh_token"),
-    client_id: env.client_id,
-    client_secret: env.client_secret,
-  };
+fn build_auth_code_redirect_url() -> std::result::Result<Url, ParseError> {
+  let env = env::get_env();
 
-  let response = utils::api::post::<RefreshTokenBody, TokenResponse>(
-    &utils::api::make_api_url("oauth/token"),
-    &body,
-  )?;
-
-  db.set_tokens(&response.access_token, &response.refresh_token)?;
-
-  Ok(response.access_token)
+  Url::parse_with_params(
+    api::AUTH_CODE_URL,
+    &[
+      ("client_id", env.client_id),
+      ("subdomain", env.subdomain),
+      ("redirect_uri", api::REDIRECT_URL.into()),
+      ("response_type", String::from("code")),
+    ],
+  )
 }
 
-async fn api_passthrough_handler(request: Request<TokenDatabase>) -> tide::Result<Response> {
-  let path = request.param("path")?;
+fn build_auth_code_body(code: String) -> AuthCodeBody {
+  let env = env::get_env();
 
-  match request.ext() {
-    None => Ok(Response::from("Token Missing")),
-    Some(token) => {
-      let url = &utils::api::make_api_url(path);
-
-      let response = utils::api::get::<serde_json::Value>(url, token)?;
-      let mut json = response.0;
-
-      if response.1 == reqwest::StatusCode::UNAUTHORIZED {
-        let refreshed_token = perform_refresh(request.state())?;
-        json = utils::api::get::<serde_json::Value>(url, &refreshed_token)?.0;
-      }
-
-      return Ok(Response::from(Body::from_json(&json)?));
-    }
+  AuthCodeBody {
+    grant_type: String::from("authorization_code"),
+    redirect_uri: api::REDIRECT_URL.into(),
+    subdomain: env.subdomain,
+    client_id: env.client_id,
+    client_secret: env.client_secret,
+    code,
   }
 }
 
-async fn auth_code_handler(req: Request<TokenDatabase>) -> tide::Result {
-  let env = utils::env::get_env();
-  let params: AuthCodeParams = req.query()?;
-  let body = AuthCodeBody {
-    grant_type: String::from("authorization_code"),
-    redirect_uri: utils::api::REDIRECT_URL.into(),
-    subdomain: env.subdomain.into(),
-    client_id: env.client_id.into(),
-    client_secret: env.client_secret.into(),
-    code: params.code,
-  };
+fn build_refresh_token_body(refresh_token: String) -> RefreshTokenBody {
+  let env = env::get_env();
 
-  let response = utils::api::post::<AuthCodeBody, TokenResponse>(
-    &utils::api::make_api_url("oauth/token"),
+  RefreshTokenBody {
+    refresh_token,
+    grant_type: String::from("refresh_token"),
+    client_id: env.client_id,
+    client_secret: env.client_secret,
+  }
+}
+
+fn perform_refresh(db: &TokenDatabase) -> Result<String> {
+  let body = build_refresh_token_body(db.get_refresh_token().unwrap());
+  let response = api::post::<RefreshTokenBody, TokenResponse>(
+    &api::make_api_url("oauth/token"),
     &body,
   )?;
 
-  req
-    .state()
-    .set_tokens(&response.access_token, &response.refresh_token)?;
+  db.handle_token_response(&response)?;
 
-  Ok(Redirect::new("/api/individuals").into())
+  Ok(response.access_token)
 }
 
 fn access_token_middleware<'a>(
@@ -123,32 +102,52 @@ fn access_token_middleware<'a>(
         tide::log::trace!("access token found", { access_token: access_token });
         request.set_ext(access_token);
 
-        return Ok(next.run(request).await);
+        Ok(next.run(request).await)
       }
-      None => {
-        let env = utils::env::get_env();
-        let url = Url::parse_with_params(
-          utils::api::AUTH_CODE_URL,
-          &[
-            ("client_id", env.client_id),
-            ("subdomain", env.subdomain),
-            ("redirect_uri", utils::api::REDIRECT_URL.into()),
-            ("response_type", String::from("code")),
-          ],
-        )?;
-
-        Ok(Redirect::new(url).into())
-      }
+      None => Ok(Redirect::new(build_auth_code_redirect_url()?).into()),
     }
   })
 }
 
+async fn auth_code_handler(req: Request<TokenDatabase>) -> tide::Result {
+  let params: AuthCodeParams = req.query()?;
+  let body = build_auth_code_body(params.code);
+  let response = api::post::<AuthCodeBody, TokenResponse>(
+    &api::make_api_url("oauth/token"),
+    &body,
+  )?;
+
+  req.state().handle_token_response(&response)?;
+
+  Ok(Redirect::new("/api/individuals").into())
+}
+
+async fn api_passthrough_handler(request: Request<TokenDatabase>) -> tide::Result<Response> {
+  let path = request.param("path")?;
+
+  match request.ext() {
+    None => Ok(Response::from("Token Missing")),
+    Some(token) => {
+      let url = &api::make_api_url(path);
+
+      let response = api::get::<serde_json::Value>(url, token)?;
+      let mut json = response.0;
+
+      if response.1 == reqwest::StatusCode::UNAUTHORIZED {
+        let refreshed_token = perform_refresh(request.state())?;
+        json = api::get::<serde_json::Value>(url, &refreshed_token)?.0;
+      }
+
+      return Ok(Response::from(Body::from_json(&json)?));
+    }
+  }
+}
+
 #[async_std::main]
 async fn main() -> tide::Result<()> {
-  let mut app = tide::with_state(TokenDatabase::default());
+  let mut app = tide::with_state(TokenDatabase::new()?);
 
   app.with(access_token_middleware);
-
   app.with(After(|mut res: Response| async {
     if let Some(err) = res.take_error() {
       let msg = format!("Error: {:?}", err);
