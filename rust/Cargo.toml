@@ -1,0 +1,17 @@
+[package]
+name = "rust"
+version = "0.1.0"
+authors = ["Alex Beckwith <alfonz129@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tide = "0.15.0"
+reqwest = { version = "0.10", features = ["json", "blocking"] }
+serde = "1.0.117"
+serde_json = "1.0.59"
+async-std = { version = "1.7.0", features = ["attributes"] }
+dotenv = "0.15.0"
+dotenv_codegen = "0.15.0"
+rustbreak = { version = "2", features = ["ron_enc"] }
