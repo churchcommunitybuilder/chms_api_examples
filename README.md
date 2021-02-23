@@ -7,7 +7,7 @@ each sub directory.
 
 [Official API Documentation](https://stable.ccbchurch.com/documentation/)
 
-# Languages
+## Languages
 - [Node JS](/nodejs)
 - [Python](/python)
 - [Java](/java)
