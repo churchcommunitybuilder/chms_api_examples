@@ -20,7 +20,7 @@ public class ClientJsonAuthentication extends ClientParametersAuthentication {
     public void intercept(HttpRequest request) throws IOException {
         super.intercept(request);
 
-        Accept.accept(request);
+        Requests.addAcceptHeader(request);
 
         var jsonFactory = JacksonFactory.getDefaultInstance();
         var content = UrlEncodedContent.getContent(request);

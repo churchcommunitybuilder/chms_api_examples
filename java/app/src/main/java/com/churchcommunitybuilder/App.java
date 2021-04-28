@@ -18,7 +18,7 @@ import java.io.IOException;
 public class App {
 
     private final HttpTransport transport;
-    private Credential credentials;
+    private final Credential credentials;
 
     public App(HttpTransport transport, Credential credentials) {
         this.transport = Preconditions.checkNotNull(transport, "transport must not be null");
@@ -34,7 +34,7 @@ public class App {
     public JSONArray getJson(GenericUrl url) throws IOException {
         var requestFactory = transport.createRequestFactory(credentials);
         var request = requestFactory.buildGetRequest(url);
-        Accept.accept(request);
+        Requests.addAcceptHeader(request);
 
         var response = request.execute();
         var jsonArray = parseJson(response);
@@ -53,7 +53,7 @@ public class App {
         var requestFactory = transport.createRequestFactory(credentials);
         var content = createJsonHttpContent(data);
         var request = requestFactory.buildPostRequest(url, content);
-        Accept.accept(request);
+        Requests.addAcceptHeader(request);
 
         var response = request.execute();
         var jsonArray = parseJson(response);

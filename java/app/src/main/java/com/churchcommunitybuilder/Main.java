@@ -31,22 +31,12 @@ public class Main {
     private static final String KEY_PORT = "port";
     private static final String DEFAULT_PORT = "8080";
 
-    public static void main(String[] args) {
-        try {
-            start();
-        } catch (IOException | GeneralSecurityException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void start() throws IOException, GeneralSecurityException {
+    public static void main(String[] args) throws IOException, GeneralSecurityException {
         var properties = loadConfiguration();
         App app = createAuthorizedApp(properties);
         var getIndividuals = new GenericUrl("https://api.ccbchurch.com/individuals");
         var individualsArray = app.getJson(getIndividuals);
-        for (var individual : individualsArray) {
-            System.out.println(individual);
-        }
+        individualsArray.forEach(System.out::println);
     }
 
     private static Properties loadConfiguration() throws IOException {
@@ -83,13 +73,7 @@ public class Main {
         var port = Ints.tryParse(portString);
 
         var flow = new AuthorizationCodeFlow.Builder(
-                method,
-                transport,
-                jsonFactory,
-                tokenServerUrl,
-                clientAuthentication,
-                clientId,
-                authorizationServerEncodedUrl)
+                method, transport, jsonFactory, tokenServerUrl, clientAuthentication, clientId, authorizationServerEncodedUrl)
                 .setDataStoreFactory(dataStoreFactory)
                 .build();
 
