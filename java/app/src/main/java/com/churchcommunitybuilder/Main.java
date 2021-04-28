@@ -33,9 +33,9 @@ public class Main {
 
     public static void main(String[] args) throws IOException, GeneralSecurityException {
         var properties = loadConfiguration();
-        App app = createAuthorizedApp(properties);
-        var getIndividuals = new GenericUrl("https://api.ccbchurch.com/individuals");
-        var individualsArray = app.getJson(getIndividuals);
+        var client = createAuthorizedClient(properties);
+        var api = new CcbApi(client);
+        var individualsArray = api.getIndividuals();
         individualsArray.forEach(System.out::println);
     }
 
@@ -50,7 +50,7 @@ public class Main {
         return properties;
     }
 
-    public static App createAuthorizedApp(Properties properties) throws GeneralSecurityException, IOException {
+    public static RestClient createAuthorizedClient(Properties properties) throws GeneralSecurityException, IOException {
         var method = BearerToken.authorizationHeaderAccessMethod();
         var transport = GoogleNetHttpTransport.newTrustedTransport();
         var jsonFactory = JacksonFactory.getDefaultInstance();
@@ -80,7 +80,7 @@ public class Main {
         LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(port).build();
         var credentials = new AuthorizationCodeInstalledApp(flow, receiver).authorize(USER_ID);
 
-        return new App(transport, credentials);
+        return new RestClient(transport, credentials);
     }
 
 }

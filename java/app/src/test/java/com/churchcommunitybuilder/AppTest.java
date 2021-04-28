@@ -18,7 +18,7 @@ class AppTest {
                 NullPointerException.class,
                 () -> {
                     var credential = new Credential.Builder(BearerToken.authorizationHeaderAccessMethod()).build();
-                    new App(null, credential);
+                    new RestClient(null, credential);
                 }
         );
     }
@@ -29,7 +29,7 @@ class AppTest {
                 NullPointerException.class,
                 () -> {
                     var transport = GoogleNetHttpTransport.newTrustedTransport();
-                    new App(transport, null);
+                    new RestClient(transport, null);
                 }
         );
     }

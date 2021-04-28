@@ -15,24 +15,18 @@ import org.json.JSONArray;
 
 import java.io.IOException;
 
-public class App {
+public class RestClient {
 
     private final HttpTransport transport;
     private final Credential credentials;
 
-    public App(HttpTransport transport, Credential credentials) {
+    public RestClient(HttpTransport transport, Credential credentials) {
         this.transport = Preconditions.checkNotNull(transport, "transport must not be null");
         this.credentials = Preconditions.checkNotNull(credentials, "credentials must not be null");
     }
 
-    /**
-     * @param url
-     * @return
-     * @throws HttpResponseException
-     * @throws IOException
-     */
     public JSONArray getJson(GenericUrl url) throws IOException {
-        var requestFactory = transport.createRequestFactory(credentials);
+        var requestFactory = this.transport.createRequestFactory(this.credentials);
         var request = requestFactory.buildGetRequest(url);
         Requests.addAcceptHeader(request);
 
@@ -42,15 +36,8 @@ public class App {
         return jsonArray;
     }
 
-    /**
-     * @param url
-     * @param data
-     * @return
-     * @throws HttpResponseException
-     * @throws IOException
-     */
     public JSONArray postJson(GenericUrl url, Object data) throws IOException {
-        var requestFactory = transport.createRequestFactory(credentials);
+        var requestFactory = this.transport.createRequestFactory(this.credentials);
         var content = createJsonHttpContent(data);
         var request = requestFactory.buildPostRequest(url, content);
         Requests.addAcceptHeader(request);
