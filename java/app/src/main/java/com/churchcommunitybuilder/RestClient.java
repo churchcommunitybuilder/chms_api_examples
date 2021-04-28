@@ -3,11 +3,10 @@
  */
 package com.churchcommunitybuilder;
 
-import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.GenericUrl;
+import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.HttpResponseException;
-import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.json.JsonHttpContent;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.common.base.Preconditions;
@@ -17,17 +16,14 @@ import java.io.IOException;
 
 public class RestClient {
 
-    private final HttpTransport transport;
-    private final Credential credentials;
+    private final HttpRequestFactory requestFactory;
 
-    public RestClient(HttpTransport transport, Credential credentials) {
-        this.transport = Preconditions.checkNotNull(transport, "transport must not be null");
-        this.credentials = Preconditions.checkNotNull(credentials, "credentials must not be null");
+    public RestClient(HttpRequestFactory httpRequestFactory) {
+        this.requestFactory = Preconditions.checkNotNull(httpRequestFactory, "httpRequestFactory must not be null");
     }
 
     public JSONArray getJson(GenericUrl url) throws IOException {
-        var requestFactory = this.transport.createRequestFactory(this.credentials);
-        var request = requestFactory.buildGetRequest(url);
+        var request = this.requestFactory.buildGetRequest(url);
         Requests.addAcceptHeader(request);
 
         var response = request.execute();
@@ -37,9 +33,8 @@ public class RestClient {
     }
 
     public JSONArray postJson(GenericUrl url, Object data) throws IOException {
-        var requestFactory = this.transport.createRequestFactory(this.credentials);
         var content = createJsonHttpContent(data);
-        var request = requestFactory.buildPostRequest(url, content);
+        var request = this.requestFactory.buildPostRequest(url, content);
         Requests.addAcceptHeader(request);
 
         var response = request.execute();

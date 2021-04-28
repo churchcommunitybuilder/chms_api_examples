@@ -18,8 +18,8 @@ import java.util.Properties;
 
 public class Main {
 
-    private static final String TOKENS_DIRECTORY_PATH = "tokens";
-    private static final String USER_ID = "api_user";
+    private static final String STORED_CREDENTIALS_DIRECTORY_PATH = "tokens";
+    private static final String STORED_CREDENTIALS_USER = "api_user";
 
     private static final String TOKEN_SERVER_URL = "https://api.ccbchurch.com/oauth/token";
     private static final String AUTHORIZATION_SERVER_URL = "https://oauth.ccbchurch.com/oauth/authorize";
@@ -33,7 +33,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException, GeneralSecurityException {
         var properties = loadConfiguration();
-        var client = createAuthorizedClient(properties);
+        var client = createAuthorizedRestClient(properties);
         var api = new CcbApi(client);
 
         api.getIndividuals().forEach(System.out::println);
@@ -50,7 +50,18 @@ public class Main {
         return properties;
     }
 
-    public static RestClient createAuthorizedClient(Properties properties) throws GeneralSecurityException, IOException {
+    private static RestClient createAuthorizedRestClient(Properties properties) throws GeneralSecurityException, IOException {
+        var transport = GoogleNetHttpTransport.newTrustedTransport();
+
+        var flow = createAuthorizationCodeFlow(properties);
+        var receiver = createLocalServerReceiver(properties);
+        var credentials = new AuthorizationCodeInstalledApp(flow, receiver).authorize(STORED_CREDENTIALS_USER);
+        var requestFactory = transport.createRequestFactory(credentials);
+
+        return new RestClient(requestFactory);
+    }
+
+    private static AuthorizationCodeFlow createAuthorizationCodeFlow(Properties properties) throws GeneralSecurityException, IOException {
         var method = BearerToken.authorizationHeaderAccessMethod();
         var transport = GoogleNetHttpTransport.newTrustedTransport();
         var jsonFactory = JacksonFactory.getDefaultInstance();
@@ -66,21 +77,21 @@ public class Main {
         authorizationServerUrl.put("subdomain", subdomain);
         var authorizationServerEncodedUrl = authorizationServerUrl.toString();
 
-        var dataDirectory = new File(TOKENS_DIRECTORY_PATH);
+        // WARNING: Do NOT save stored credentials in git!
+        var dataDirectory = new File(STORED_CREDENTIALS_DIRECTORY_PATH);
         var dataStoreFactory = new FileDataStoreFactory(dataDirectory);
 
-        var portString = properties.getProperty(KEY_PORT, DEFAULT_PORT);
-        var port = Ints.tryParse(portString);
-
-        var flow = new AuthorizationCodeFlow.Builder(
+        return new AuthorizationCodeFlow.Builder(
                 method, transport, jsonFactory, tokenServerUrl, clientAuthentication, clientId, authorizationServerEncodedUrl)
                 .setDataStoreFactory(dataStoreFactory)
                 .build();
+    }
 
-        LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(port).build();
-        var credentials = new AuthorizationCodeInstalledApp(flow, receiver).authorize(USER_ID);
+    private static LocalServerReceiver createLocalServerReceiver(Properties properties) {
+        var portString = properties.getProperty(KEY_PORT, DEFAULT_PORT);
+        var port = Ints.tryParse(portString);
 
-        return new RestClient(transport, credentials);
+        return new LocalServerReceiver.Builder().setPort(port).build();
     }
 
 }

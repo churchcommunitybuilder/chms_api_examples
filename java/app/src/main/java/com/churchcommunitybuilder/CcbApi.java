@@ -14,12 +14,13 @@ public class CcbApi {
 
     private final RestClient client;
 
-    public CcbApi(RestClient client) {
-        this.client = Preconditions.checkNotNull(client, "client must not be null");
+    public CcbApi(RestClient restClient) {
+        this.client = Preconditions.checkNotNull(restClient, "restClient must not be null");
     }
 
     public JSONArray getIndividuals() throws IOException {
         var getIndividuals = createUrl(INDIVIDUALS_URI);
+
         return this.client.getJson(getIndividuals);
     }
 
