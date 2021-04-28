@@ -35,8 +35,8 @@ public class Main {
         var properties = loadConfiguration();
         var client = createAuthorizedClient(properties);
         var api = new CcbApi(client);
-        var individualsArray = api.getIndividuals();
-        individualsArray.forEach(System.out::println);
+
+        api.getIndividuals().forEach(System.out::println);
     }
 
     private static Properties loadConfiguration() throws IOException {
