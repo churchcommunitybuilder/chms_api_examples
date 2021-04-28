@@ -72,10 +72,7 @@ public class Main {
         var clientSecret = properties.getProperty(KEY_CLIENT_SECRET);
         var clientAuthentication = new ClientJsonAuthentication(clientId, clientSecret);
 
-        var authorizationServerUrl = new GenericUrl(AUTHORIZATION_SERVER_URL);
-        var subdomain = properties.getProperty(KEY_SUBDOMAIN);
-        authorizationServerUrl.put("subdomain", subdomain);
-        var authorizationServerEncodedUrl = authorizationServerUrl.toString();
+        var authorizationServerEncodedUrl = createAuthorizationServerEncodedUrl(properties);
 
         // WARNING: Do NOT save stored credentials in git!
         var dataDirectory = new File(STORED_CREDENTIALS_DIRECTORY_PATH);
@@ -85,6 +82,14 @@ public class Main {
                 method, transport, jsonFactory, tokenServerUrl, clientAuthentication, clientId, authorizationServerEncodedUrl)
                 .setDataStoreFactory(dataStoreFactory)
                 .build();
+    }
+
+    private static String createAuthorizationServerEncodedUrl(Properties properties) {
+        var authorizationServerUrl = new GenericUrl(AUTHORIZATION_SERVER_URL);
+        var subdomain = properties.getProperty(KEY_SUBDOMAIN);
+        authorizationServerUrl.put("subdomain", subdomain);
+
+        return authorizationServerUrl.toString();
     }
 
     private static LocalServerReceiver createLocalServerReceiver(Properties properties) {
