@@ -8,5 +8,8 @@ update:
 	git pull
 	bin/composer.phar update
 
+start:
+	php -S localhost:8888 -t src/ccb_api_example/
+
 test:
 	./vendor/bin/phpunit tests
