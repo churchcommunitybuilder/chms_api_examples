@@ -9,7 +9,7 @@ update:
 	bin/composer.phar update
 
 start:
-	php -S localhost:8888 -t src/ccb_api_example/
+	php -S localhost:8888 -t src/
 
 test:
 	./vendor/bin/phpunit tests
