@@ -37,9 +37,12 @@ if (isset($_GET['code'])) {
 		$redirectUri
 	);
 
-	$individuals = get($accessToken, 'individuals');
-	var_dump($individuals);
-	exit;
+//	$individuals = get($accessToken, 'individuals');
+//	var_dump($individuals);
+//	exit;
+
+	$refreshToken = createRefreshToken($clientId, $clientSecret, $refreshToken);
+	var_dump($refreshToken);
 } else {
 	$authorizationUrl = createAuthorizationUrl($clientId, $redirectUri, $subdomain);
 	redirectTo($authorizationUrl);
@@ -95,15 +98,13 @@ function redirectTo(string $authorizationUrl): void
     HTML;
 }
 
-// TODO: refresh token helper
 function createAccessToken(
 	string $clientId,
 	string $clientSecret,
 	string $authorizationCode,
 	string $subdomain,
 	string $redirectUri
-): array
-{
+): array {
 	$client = new GuzzleHttp\Client();
 
 	$response = $client->post(
@@ -119,6 +120,29 @@ function createAccessToken(
 				'code' => $authorizationCode,
 				'subdomain' => $subdomain,
 				'redirect_uri' => $redirectUri,
+			],
+		],
+	);
+
+	$contents = $response->getBody()->getContents();
+
+	return json_decode($contents, $associative = true);
+}
+
+function createRefreshToken(string $clientId, string $clientSecret, string $refreshToken): array {
+	$client = new GuzzleHttp\Client();
+
+	$response = $client->post(
+		TOKEN_SERVER_URL,
+		[
+			'auth' => [$clientId, $clientSecret],
+			'headers' => [
+				'Content-Type' => 'application/json',
+				'Accept' => 'application/vnd.ccbchurch.v2+json',
+			],
+			'json' => [
+				'grant_type' => 'refresh_token',
+				'refresh_token' => $refreshToken,
 			],
 		],
 	);
