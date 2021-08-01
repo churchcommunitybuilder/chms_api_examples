@@ -24,12 +24,12 @@ if (isset($_GET['code'])) {
 		'refresh_token' => $refreshToken,
 	] = $oAuth2->createAccessToken($_GET['code'], $redirectUri);
 
-//	$individuals = get($accessToken, 'individuals');
-//	var_dump($individuals);
-//	exit;
+	$client = new \Ccb\Api($accessToken);
+	$individuals = $client->get('individuals');
+	var_dump($individuals);
 
-	$refreshToken = $oAuth2->createRefreshToken($refreshToken);
-	var_dump($refreshToken);
+//	$refreshToken = $oAuth2->createRefreshToken($refreshToken);
+//	var_dump($refreshToken);
 } else {
 	$authorizationUrl = $oAuth2->createAuthorizationUrl($redirectUri);
 	redirectTo($authorizationUrl);
@@ -60,25 +60,4 @@ function redirectTo(string $authorizationUrl): void
     </body>
     </html>
     HTML;
-}
-
-function get(string $bearerToken, string $uri): array
-{
-	$client = new GuzzleHttp\Client([
-		'base_uri' => 'https://api.ccbchurch.com',
-	]);
-
-	$response = $client->get(
-		$uri,
-		[
-			'headers' => [
-				'Authorization' => "Bearer $bearerToken",
-				'Accept' => 'application/vnd.ccbchurch.v2+json',
-			]
-		],
-	);
-
-	$contents = $response->getBody()->getContents();
-
-	return json_decode($contents, $associative = true);
 }
