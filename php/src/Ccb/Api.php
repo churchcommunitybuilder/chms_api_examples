@@ -8,11 +8,33 @@ class Api
 {
 	const BASE_URI = 'https://api.ccbchurch.com';
 
-	private GuzzleClient $client;
+	private OAuth2 $oAuth2;
+	private Persistence $persistence;
 
-	public function __construct(string $bearerToken)
+	public function __construct(OAuth2 $oAuth2, Persistence $persistence)
 	{
-		$this->client = new GuzzleClient([
+		$this->oAuth2 = $oAuth2;
+		$this->persistence = $persistence;
+	}
+
+	public function getIndividuals(): array
+	{
+		return $this->get('individuals');
+	}
+
+	public function get(string $uri): array
+	{
+		$response = $this->createGuzzleClient()->get($uri);
+
+		$contents = $response->getBody()->getContents();
+
+		return json_decode($contents, $associative = true);
+	}
+
+	private function createGuzzleClient(): GuzzleClient
+	{
+		$bearerToken = $this->getBearerTokenRefreshIfNecessary();
+		return new GuzzleClient([
 			'base_uri' => self::BASE_URI,
 			'headers' => [
 				'Authorization' => "Bearer $bearerToken",
@@ -21,12 +43,18 @@ class Api
 		]);
 	}
 
-	function get(string $uri): array
+	private function getBearerTokenRefreshIfNecessary(): string
 	{
-		$response = $this->client->get($uri);
+		if ($this->persistence->hasCredentials(PERSISTENCE_ID)) {
+			$credentials = $this->persistence->getCredentials(PERSISTENCE_ID);
+			if ($credentials->isExpired()) {
+				$credentials = $this->o ->createRefreshToken($credentials->getRefreshToken());
+				$this->persistence->setCredentials(PERSISTENCE_ID, $credentials);
+			}
 
-		$contents = $response->getBody()->getContents();
+			return $credentials->getAccessToken();
+		}
 
-		return json_decode($contents, $associative = true);
+		throw new OAuth2UnauthorizedException();
 	}
 }

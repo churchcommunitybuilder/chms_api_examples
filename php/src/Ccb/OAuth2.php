@@ -33,11 +33,9 @@ class OAuth2
 			]);
 	}
 
-	public function createAccessToken(
-		string $authorizationCode,
-		string $redirectUri
-	): array {
-		return $this->postJson(
+	public function createAccessToken(string $authorizationCode, string $redirectUri): OAuth2Credentials
+	{
+		$credentials = $this->postJson(
 			self::TOKEN_SERVER_URL,
 			[
 				'grant_type' => 'authorization_code',
@@ -46,17 +44,21 @@ class OAuth2
 				'redirect_uri' => $redirectUri,
 			]
 		);
+
+		return OAuth2Credentials::createFromArray($credentials);
 	}
 
-	public function createRefreshToken(string $refreshToken): array
+	public function createRefreshToken(string $refreshToken): OAuth2Credentials
 	{
-		return $this->postJson(
+		$credentials = $this->postJson(
 			self::TOKEN_SERVER_URL,
 			[
 				'grant_type' => 'refresh_token',
 				'refresh_token' => $refreshToken,
 			]
 		);
+
+		return OAuth2Credentials::createFromArray($credentials);
 	}
 
 	private function postJson(string $uri, array $json): array

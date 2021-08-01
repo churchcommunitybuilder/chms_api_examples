@@ -11,28 +11,26 @@ if (php_sapi_name() !== 'cli-server') {
 	trigger_error($message, E_USER_ERROR);
 }
 
+const PERSISTENCE_ID = 'default';
+
 $configuration = getConfiguration();
 $oAuth2 = new \Ccb\OAuth2($configuration);
-
-$redirectUri = \Ccb\Server::getInstance()->getUrlToSelf();
-if (isset($_GET['code'])) {
-	[
-		'access_token' => $accessToken,
-		'token_type' => $tokenType,
-		'expires_in' => $expiresInSeconds,
-		'scope' => $scope,
-		'refresh_token' => $refreshToken,
-	] = $oAuth2->createAccessToken($_GET['code'], $redirectUri);
-
-	$client = new \Ccb\Api($accessToken);
-	$individuals = $client->get('individuals');
-	var_dump($individuals);
-
-//	$refreshToken = $oAuth2->createRefreshToken($refreshToken);
-//	var_dump($refreshToken);
-} else {
-	$authorizationUrl = $oAuth2->createAuthorizationUrl($redirectUri);
-	redirectTo($authorizationUrl);
+$persistence = \Ccb\SimplePersistence::newInstance();
+$client = new \Ccb\Api($oAuth2, $persistence);
+$businessLogic = fn() => var_dump($client->getIndividuals());
+try {
+	$businessLogic();
+} catch (\Ccb\OAuth2UnauthorizedException $e) {
+	$redirectUri = \Ccb\Server::getInstance()->getUrlToSelf();
+	if (isset($_GET['code'])) {
+		$credentials = $oAuth2->createAccessToken($_GET['code'], $redirectUri);
+		$persistence->setCredentials(PERSISTENCE_ID, $credentials);
+		$businessLogic();
+	} else {
+		$authorizationUrl = $oAuth2->createAuthorizationUrl($redirectUri);
+		redirectTo($authorizationUrl);
+		exit;
+	}
 }
 
 function getConfiguration(): array
