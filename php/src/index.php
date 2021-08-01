@@ -4,9 +4,9 @@ require_once dirname(__DIR__) . '/vendor/autoload.php';
 
 if (php_sapi_name() !== 'cli-server') {
 	$message = <<<MESSAGE
-    This example is designed to be run using PHP\'s built-in web server.
-    Please run `make start` and open http://localhost:8888 in your browser.
-    MESSAGE;
+	This example is designed to be run using PHP\'s built-in web server.
+	Please run `make start` and open http://localhost:8888 in your browser.
+	MESSAGE;
 
 	trigger_error($message, E_USER_ERROR);
 }
@@ -46,16 +46,16 @@ function redirectTo(string $authorizationUrl): void
 	header("Location: $authorizationUrl");
 
 	print <<<HTML
-    <html>
-    <head>
-    <meta http-equiv="refresh" content="0; URL=$authorizationUrl" />
-    </head>
-    <body>
-    Your browser should redirect you momentarily. If that doesn't happen please consider upgrading to a browser that works...
-    or <a href="$authorizationUrl">CLICK HERE NOW!</a>
-    </body>
-    </html>
-    HTML;
+	<html>
+	<head>
+	<meta http-equiv="refresh" content="0; URL=$authorizationUrl" />
+	</head>
+	<body>
+	Your browser should redirect you momentarily. If that doesn't happen please consider upgrading to a browser that works...
+	or <a href="$authorizationUrl">CLICK HERE NOW!</a>
+	</body>
+	</html>
+	HTML;
 
 	exit;
 }
