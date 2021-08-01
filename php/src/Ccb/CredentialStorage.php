@@ -2,11 +2,10 @@
 
 namespace Ccb;
 
-/**
- * This interface is designed in such a way that multiple
- */
 interface CredentialStorage
 {
+	public const DEFAULT_ID = 'default';
+
 	public function hasCredentials(string $id): bool;
 
 	public function getCredentials(string $id): ?OAuth2Credentials;

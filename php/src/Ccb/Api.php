@@ -10,11 +10,13 @@ class Api
 
 	private OAuth2 $oAuth2;
 	private CredentialStorage $storage;
+	private string $storageId;
 
-	public function __construct(OAuth2 $oAuth2, CredentialStorage $storage)
+	public function __construct(OAuth2 $oAuth2, CredentialStorage $storage, string $storageId = CredentialStorage::DEFAULT_ID)
 	{
 		$this->oAuth2 = $oAuth2;
 		$this->storage = $storage;
+		$this->storageId = $storageId;
 	}
 
 	public function getIndividuals(): array
@@ -45,11 +47,11 @@ class Api
 
 	private function getBearerTokenRefreshIfNecessary(): string
 	{
-		if ($this->storage->hasCredentials(STORAGE_ID)) {
-			$credentials = $this->storage->getCredentials(STORAGE_ID);
+		if ($this->storage->hasCredentials($this->storageId)) {
+			$credentials = $this->storage->getCredentials($this->storageId);
 			if ($credentials->isExpired()) {
 				$credentials = $this->oAuth2->createRefreshToken($credentials->getRefreshToken());
-				$this->storage->setCredentials(STORAGE_ID, $credentials);
+				$this->storage->setCredentials($this->storageId, $credentials);
 			}
 
 			$tokenType = $credentials->getTokenType();

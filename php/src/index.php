@@ -11,8 +11,6 @@ if (php_sapi_name() !== 'cli-server') {
 	trigger_error($message, E_USER_ERROR);
 }
 
-const STORAGE_ID = 'default';
-
 $configuration = getConfiguration();
 $oAuth2 = new \Ccb\OAuth2($configuration);
 $storage = \Ccb\SimpleCredentialStorage::newInstance();
@@ -34,7 +32,7 @@ try {
 		// on the last leg of this auth detour we should receive a code that we can use to retrieve the credentials
 		$credentials = $oAuth2->createAccessToken($_GET['code']);
 		// which we then store for later use
-		$storage->setCredentials(STORAGE_ID, $credentials);
+		$storage->setCredentials(\Ccb\CredentialStorage::DEFAULT_ID, $credentials);
 
 		// finally we retry our business logic
 		$businessLogic();
