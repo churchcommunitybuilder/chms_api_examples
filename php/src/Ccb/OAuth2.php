@@ -13,6 +13,7 @@ class OAuth2
 	private string $clientId;
 	private string $clientSecret;
 	private string $subdomain;
+	private string $redirectUri;
 
 	public function __construct(array $configuration)
 	{
@@ -21,20 +22,21 @@ class OAuth2
 			'client_id' => $this->clientId,
 			'client_secret' => $this->clientSecret,
 			'subdomain' => $this->subdomain,
+			'redirect_uri' => $this->redirectUri,
 		] = $configuration;
 	}
 
-	public function createAuthorizationUrl(string $redirectUri): string
+	public function createAuthorizationUrl(): string
 	{
 		return self::AUTHORIZATION_SERVER_URL . '?' . http_build_query([
 				'client_id' => $this->clientId,
-				'redirect_uri' => $redirectUri,
+				'redirect_uri' => $this->getRedirectUri(),
 				'response_type' => 'code',
 				'subdomain' => $this->subdomain,
 			]);
 	}
 
-	public function createAccessToken(string $authorizationCode, string $redirectUri): OAuth2Credentials
+	public function createAccessToken(string $authorizationCode): OAuth2Credentials
 	{
 		try {
 			$credentials = $this->postJson(
@@ -43,7 +45,7 @@ class OAuth2
 					'grant_type' => 'authorization_code',
 					'code' => $authorizationCode,
 					'subdomain' => $this->subdomain,
-					'redirect_uri' => $redirectUri,
+					'redirect_uri' => $this->getRedirectUri(),
 				]
 			);
 
@@ -51,6 +53,11 @@ class OAuth2
 		} catch (Throwable $t) {
 			throw new OAuth2Exception($t->getMessage(), 0, $t);
 		}
+	}
+
+	private function getRedirectUri(): string
+	{
+		return $this->redirectUri ?: Server::getInstance()->getUrlToSelf();
 	}
 
 	private function postJson(string $uri, array $json): array

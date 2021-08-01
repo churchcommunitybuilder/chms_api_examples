@@ -2,8 +2,6 @@
 
 namespace Ccb;
 
-use OAuthException;
-
-class OAuth2UnauthorizedException extends OAuthException
+class OAuth2UnauthorizedException extends OAuth2Exception
 {
 }

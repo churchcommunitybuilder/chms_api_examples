@@ -21,12 +21,11 @@ $businessLogic = fn() => var_dump($client->getIndividuals());
 try {
 	$businessLogic();
 } catch (\Ccb\OAuth2UnauthorizedException $e) {
-	$redirectUri = \Ccb\Server::getInstance()->getUrlToSelf();
 	if (!isset($_GET['code'])) {
-		$authorizationUrl = $oAuth2->createAuthorizationUrl($redirectUri);
+		$authorizationUrl = $oAuth2->createAuthorizationUrl();
 		redirectTo($authorizationUrl);
 	} else {
-		$credentials = $oAuth2->createAccessToken($_GET['code'], $redirectUri);
+		$credentials = $oAuth2->createAccessToken($_GET['code']);
 		$persistence->setCredentials(PERSISTENCE_ID, $credentials);
 		$businessLogic();
 	}

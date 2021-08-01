@@ -49,11 +49,17 @@ class Api
 		if ($this->persistence->hasCredentials(PERSISTENCE_ID)) {
 			$credentials = $this->persistence->getCredentials(PERSISTENCE_ID);
 			if ($credentials->isExpired()) {
-				$credentials = $this->o->createRefreshToken($credentials->getRefreshToken());
+				$credentials = $this->oAuth2->createRefreshToken($credentials->getRefreshToken());
 				$this->persistence->setCredentials(PERSISTENCE_ID, $credentials);
 			}
 
-			return $credentials->getAccessToken();
+			$tokenType = $credentials->getTokenType();
+			if ($tokenType === 'bearer') {
+				return $credentials->getAccessToken();
+			}
+
+			// TODO: cover with test
+			throw new OAuth2Exception("Unsupported token type '$tokenType'");
 		}
 
 		throw new OAuth2UnauthorizedException();
