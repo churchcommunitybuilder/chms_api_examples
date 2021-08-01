@@ -34,6 +34,7 @@ class Api
 	private function createGuzzleClient(): GuzzleClient
 	{
 		$bearerToken = $this->getBearerTokenRefreshIfNecessary();
+
 		return new GuzzleClient([
 			'base_uri' => self::BASE_URI,
 			'headers' => [
@@ -48,7 +49,7 @@ class Api
 		if ($this->persistence->hasCredentials(PERSISTENCE_ID)) {
 			$credentials = $this->persistence->getCredentials(PERSISTENCE_ID);
 			if ($credentials->isExpired()) {
-				$credentials = $this->o ->createRefreshToken($credentials->getRefreshToken());
+				$credentials = $this->o->createRefreshToken($credentials->getRefreshToken());
 				$this->persistence->setCredentials(PERSISTENCE_ID, $credentials);
 			}
 

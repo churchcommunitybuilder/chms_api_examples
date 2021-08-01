@@ -2,6 +2,8 @@
 
 namespace Ccb;
 
-class OAuth2UnauthorizedException extends \OAuthException
+use OAuthException;
+
+class OAuth2UnauthorizedException extends OAuthException
 {
 }

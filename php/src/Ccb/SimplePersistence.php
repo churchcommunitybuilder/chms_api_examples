@@ -4,19 +4,19 @@ namespace Ccb;
 
 class SimplePersistence implements Persistence
 {
+	private string $file;
+
+	private function __construct(string $file)
+	{
+		$this->file = $file;
+	}
+
 	public static function newInstance(): self
 	{
 		$home = getenv('HOME');
 		$file = "$home/.ccb.credentials";
 
 		return new self($file);
-	}
-
-	private string $file;
-
-	private function __construct(string $file)
-	{
-		$this->file = $file;
 	}
 
 	public function hasCredentials(string $id): bool

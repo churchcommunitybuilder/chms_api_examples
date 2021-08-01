@@ -2,6 +2,8 @@
 
 namespace Ccb;
 
-class OAuth2Exception extends \RuntimeException
+use RuntimeException;
+
+class OAuth2Exception extends RuntimeException
 {
 }

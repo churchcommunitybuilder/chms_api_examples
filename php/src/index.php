@@ -22,14 +22,13 @@ try {
 	$businessLogic();
 } catch (\Ccb\OAuth2UnauthorizedException $e) {
 	$redirectUri = \Ccb\Server::getInstance()->getUrlToSelf();
-	if (isset($_GET['code'])) {
+	if (!isset($_GET['code'])) {
+		$authorizationUrl = $oAuth2->createAuthorizationUrl($redirectUri);
+		redirectTo($authorizationUrl);
+	} else {
 		$credentials = $oAuth2->createAccessToken($_GET['code'], $redirectUri);
 		$persistence->setCredentials(PERSISTENCE_ID, $credentials);
 		$businessLogic();
-	} else {
-		$authorizationUrl = $oAuth2->createAuthorizationUrl($redirectUri);
-		redirectTo($authorizationUrl);
-		exit;
 	}
 }
 
@@ -58,4 +57,6 @@ function redirectTo(string $authorizationUrl): void
     </body>
     </html>
     HTML;
+
+	exit;
 }

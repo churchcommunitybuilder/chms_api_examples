@@ -3,6 +3,7 @@
 namespace Ccb;
 
 use GuzzleHttp\Client as GuzzleClient;
+use Throwable;
 
 class OAuth2
 {
@@ -35,30 +36,21 @@ class OAuth2
 
 	public function createAccessToken(string $authorizationCode, string $redirectUri): OAuth2Credentials
 	{
-		$credentials = $this->postJson(
-			self::TOKEN_SERVER_URL,
-			[
-				'grant_type' => 'authorization_code',
-				'code' => $authorizationCode,
-				'subdomain' => $this->subdomain,
-				'redirect_uri' => $redirectUri,
-			]
-		);
+		try {
+			$credentials = $this->postJson(
+				self::TOKEN_SERVER_URL,
+				[
+					'grant_type' => 'authorization_code',
+					'code' => $authorizationCode,
+					'subdomain' => $this->subdomain,
+					'redirect_uri' => $redirectUri,
+				]
+			);
 
-		return OAuth2Credentials::createFromArray($credentials);
-	}
-
-	public function createRefreshToken(string $refreshToken): OAuth2Credentials
-	{
-		$credentials = $this->postJson(
-			self::TOKEN_SERVER_URL,
-			[
-				'grant_type' => 'refresh_token',
-				'refresh_token' => $refreshToken,
-			]
-		);
-
-		return OAuth2Credentials::createFromArray($credentials);
+			return OAuth2Credentials::createFromArray($credentials);
+		} catch (Throwable $t) {
+			throw new OAuth2Exception($t->getMessage(), 0, $t);
+		}
 	}
 
 	private function postJson(string $uri, array $json): array
@@ -80,6 +72,23 @@ class OAuth2
 				'Accept' => 'application/vnd.ccbchurch.v2+json',
 			],
 		]);
+	}
+
+	public function createRefreshToken(string $refreshToken): OAuth2Credentials
+	{
+		try {
+			$credentials = $this->postJson(
+				self::TOKEN_SERVER_URL,
+				[
+					'grant_type' => 'refresh_token',
+					'refresh_token' => $refreshToken,
+				]
+			);
+
+			return OAuth2Credentials::createFromArray($credentials);
+		} catch (Throwable $t) {
+			throw new OAuth2Exception($t->getMessage(), 0, $t);
+		}
 	}
 
 }

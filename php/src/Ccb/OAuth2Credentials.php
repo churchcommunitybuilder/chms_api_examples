@@ -13,19 +13,6 @@ class OAuth2Credentials
 	private string $scope;
 	private string $refreshToken;
 
-	public static function createFromArray(array $credentials): self
-	{
-		[
-			'access_token' => $accessToken,
-			'token_type' => $tokenType,
-			'expires_in' => $expiresIn,
-			'scope' => $scope,
-			'refresh_token' => $refreshToken,
-		] = $credentials;
-
-		return new self($accessToken, $tokenType, $expiresIn, $scope, $refreshToken);
-	}
-
 	/**
 	 * Credentials constructor.
 	 * @param string $accessToken
@@ -41,6 +28,19 @@ class OAuth2Credentials
 		$this->expiresAt = time() + $expiresIn;
 		$this->scope = $scope;
 		$this->refreshToken = $refreshToken;
+	}
+
+	public static function createFromArray(array $credentials): self
+	{
+		[
+			'access_token' => $accessToken,
+			'token_type' => $tokenType,
+			'expires_in' => $expiresIn,
+			'scope' => $scope,
+			'refresh_token' => $refreshToken,
+		] = $credentials;
+
+		return new self($accessToken, $tokenType, $expiresIn, $scope, $refreshToken);
 	}
 
 	/**
