@@ -2,7 +2,7 @@
 
 namespace Ccb;
 
-interface Persistence
+interface CredentialStorage
 {
 	public function hasCredentials(string $id): bool;
 

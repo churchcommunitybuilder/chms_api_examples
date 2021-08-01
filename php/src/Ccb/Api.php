@@ -9,9 +9,9 @@ class Api
 	const BASE_URI = 'https://api.ccbchurch.com';
 
 	private OAuth2 $oAuth2;
-	private Persistence $persistence;
+	private CredentialStorage $persistence;
 
-	public function __construct(OAuth2 $oAuth2, Persistence $persistence)
+	public function __construct(OAuth2 $oAuth2, CredentialStorage $persistence)
 	{
 		$this->oAuth2 = $oAuth2;
 		$this->persistence = $persistence;

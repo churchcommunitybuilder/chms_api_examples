@@ -15,9 +15,13 @@ const PERSISTENCE_ID = 'default';
 
 $configuration = getConfiguration();
 $oAuth2 = new \Ccb\OAuth2($configuration);
-$persistence = \Ccb\SimplePersistence::newInstance();
+$persistence = \Ccb\SimpleCredentialStorage::newInstance();
 $client = new \Ccb\Api($oAuth2, $persistence);
-$businessLogic = fn() => var_dump($client->getIndividuals());
+$businessLogic = function () use ($client) {
+	header('Content-Type: text/plain');
+	var_export($client->getIndividuals());
+};
+
 try {
 	$businessLogic();
 } catch (\Ccb\OAuth2UnauthorizedException $e) {
@@ -27,6 +31,7 @@ try {
 	} else {
 		$credentials = $oAuth2->createAccessToken($_GET['code']);
 		$persistence->setCredentials(PERSISTENCE_ID, $credentials);
+
 		$businessLogic();
 	}
 }

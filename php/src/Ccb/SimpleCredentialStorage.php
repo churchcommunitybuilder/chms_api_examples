@@ -2,7 +2,7 @@
 
 namespace Ccb;
 
-class SimplePersistence implements Persistence
+class SimpleCredentialStorage implements CredentialStorage
 {
 	private string $file;
 
