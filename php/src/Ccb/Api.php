@@ -35,11 +35,10 @@ class Api
 	{
 		$bearerToken = $this->getBearerTokenRefreshIfNecessary();
 
-		return new GuzzleClient([
+		return GuzzleFactory::createClient([
 			'base_uri' => self::BASE_URI,
 			'headers' => [
 				'Authorization' => "Bearer $bearerToken",
-				'Accept' => 'application/vnd.ccbchurch.v2+json',
 			],
 		]);
 	}

@@ -2,7 +2,6 @@
 
 namespace Ccb;
 
-use GuzzleHttp\Client as GuzzleClient;
 use Throwable;
 
 class OAuth2
@@ -60,27 +59,6 @@ class OAuth2
 		return $this->redirectUri ?: Server::getInstance()->getUrlToSelf();
 	}
 
-	private function postJson(string $uri, array $json): array
-	{
-		$response = $this
-			->createGuzzleClient()
-			->post($uri, ['json' => $json]);
-
-		$contents = $response->getBody()->getContents();
-
-		return json_decode($contents, $associative = true);
-	}
-
-	private function createGuzzleClient(): GuzzleClient
-	{
-		return new GuzzleClient([
-			'auth' => [$this->clientId, $this->clientSecret],
-			'headers' => [
-				'Accept' => 'application/vnd.ccbchurch.v2+json',
-			],
-		]);
-	}
-
 	public function createRefreshToken(string $refreshToken): OAuth2Credentials
 	{
 		try {
@@ -98,4 +76,16 @@ class OAuth2
 		}
 	}
 
+	private function postJson(string $uri, array $json): array
+	{
+		$client = GuzzleFactory::createClient([
+			'auth' => [$this->clientId, $this->clientSecret],
+		]);
+
+		$response = $client->post($uri, ['json' => $json]);
+
+		$contents = $response->getBody()->getContents();
+
+		return json_decode($contents, $associative = true);
+	}
 }
