@@ -2,6 +2,9 @@
 
 namespace Ccb;
 
+/**
+ * This interface is designed in such a way that multiple
+ */
 interface CredentialStorage
 {
 	public function hasCredentials(string $id): bool;

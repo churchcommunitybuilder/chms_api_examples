@@ -11,12 +11,12 @@ if (php_sapi_name() !== 'cli-server') {
 	trigger_error($message, E_USER_ERROR);
 }
 
-const PERSISTENCE_ID = 'default';
+const STORAGE_ID = 'default';
 
 $configuration = getConfiguration();
 $oAuth2 = new \Ccb\OAuth2($configuration);
-$persistence = \Ccb\SimpleCredentialStorage::newInstance();
-$client = new \Ccb\Api($oAuth2, $persistence);
+$storage = \Ccb\SimpleCredentialStorage::newInstance();
+$client = new \Ccb\Api($oAuth2, $storage);
 $businessLogic = function () use ($client) {
 	header('Content-Type: text/plain');
 	var_export($client->getIndividuals());
@@ -34,7 +34,7 @@ try {
 		// on the last leg of this auth detour we should receive a code that we can use to retrieve the credentials
 		$credentials = $oAuth2->createAccessToken($_GET['code']);
 		// which we then store for later use
-		$persistence->setCredentials(PERSISTENCE_ID, $credentials);
+		$storage->setCredentials(STORAGE_ID, $credentials);
 
 		// finally we retry our business logic
 		$businessLogic();

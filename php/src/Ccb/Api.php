@@ -9,12 +9,12 @@ class Api
 	const BASE_URI = 'https://api.ccbchurch.com';
 
 	private OAuth2 $oAuth2;
-	private CredentialStorage $persistence;
+	private CredentialStorage $storage;
 
-	public function __construct(OAuth2 $oAuth2, CredentialStorage $persistence)
+	public function __construct(OAuth2 $oAuth2, CredentialStorage $storage)
 	{
 		$this->oAuth2 = $oAuth2;
-		$this->persistence = $persistence;
+		$this->storage = $storage;
 	}
 
 	public function getIndividuals(): array
@@ -45,11 +45,11 @@ class Api
 
 	private function getBearerTokenRefreshIfNecessary(): string
 	{
-		if ($this->persistence->hasCredentials(PERSISTENCE_ID)) {
-			$credentials = $this->persistence->getCredentials(PERSISTENCE_ID);
+		if ($this->storage->hasCredentials(STORAGE_ID)) {
+			$credentials = $this->storage->getCredentials(STORAGE_ID);
 			if ($credentials->isExpired()) {
 				$credentials = $this->oAuth2->createRefreshToken($credentials->getRefreshToken());
-				$this->persistence->setCredentials(PERSISTENCE_ID, $credentials);
+				$this->storage->setCredentials(STORAGE_ID, $credentials);
 			}
 
 			$tokenType = $credentials->getTokenType();
