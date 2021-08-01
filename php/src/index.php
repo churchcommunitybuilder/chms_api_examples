@@ -25,13 +25,18 @@ $businessLogic = function () use ($client) {
 try {
 	$businessLogic();
 } catch (\Ccb\OAuth2UnauthorizedException $e) {
+	// this is likely caused by a lack of stored credentials
 	if (!isset($_GET['code'])) {
+		// in this contrived example let's redirect to the auth URL and then loop back
 		$authorizationUrl = $oAuth2->createAuthorizationUrl();
 		redirectTo($authorizationUrl);
 	} else {
+		// on the last leg of this auth detour we should receive a code that we can use to retrieve the credentials
 		$credentials = $oAuth2->createAccessToken($_GET['code']);
+		// which we then store for later use
 		$persistence->setCredentials(PERSISTENCE_ID, $credentials);
 
+		// finally we retry our business logic
 		$businessLogic();
 	}
 }
