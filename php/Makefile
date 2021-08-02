@@ -1,3 +1,5 @@
+.PHONY: default install update start test
+
 default:
 	echo "Nothing to do"
 
