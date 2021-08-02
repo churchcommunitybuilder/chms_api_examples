@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Ccb;
+namespace CCB;
 
 // TODO: cover with unit tests
 class Server

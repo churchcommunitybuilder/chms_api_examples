@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Ccb;
+namespace CCB;
 
 use GuzzleHttp\Client as GuzzleClient;
 

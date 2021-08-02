@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Ccb;
+namespace CCB;
 
 /**
  * An immutable representation of OAuth2 credentials.

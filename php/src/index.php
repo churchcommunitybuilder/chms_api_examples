@@ -12,9 +12,9 @@ if (php_sapi_name() !== 'cli-server') {
 }
 
 $configuration = getConfiguration();
-$oAuth2 = new \Ccb\OAuth2($configuration);
-$storage = \Ccb\SimpleCredentialStorage::newInstance();
-$client = new \Ccb\Api($oAuth2, $storage);
+$oAuth2 = new \CCB\OAuth2($configuration);
+$storage = \CCB\SimpleCredentialStorage::newInstance();
+$client = new \CCB\Api($oAuth2, $storage);
 $businessLogic = function () use ($client) {
 	header('Content-Type: text/plain');
 	var_export($client->getIndividuals());
@@ -22,7 +22,7 @@ $businessLogic = function () use ($client) {
 
 try {
 	$businessLogic();
-} catch (\Ccb\OAuth2UnauthorizedException $e) {
+} catch (\CCB\OAuth2UnauthorizedException $e) {
 	// this is likely caused by a lack of stored credentials
 	if (!isset($_GET['code'])) {
 		// in this contrived example let's redirect to the auth URL and then loop back
@@ -32,7 +32,7 @@ try {
 		// on the last leg of this auth detour we should receive a code that we can use to retrieve the credentials
 		$credentials = $oAuth2->createAccessToken($_GET['code']);
 		// which we then store for later use
-		$storage->setCredentials(\Ccb\CredentialStorage::DEFAULT_ID, $credentials);
+		$storage->setCredentials(\CCB\CredentialStorage::DEFAULT_ID, $credentials);
 
 		// finally we retry our business logic
 		$businessLogic();
