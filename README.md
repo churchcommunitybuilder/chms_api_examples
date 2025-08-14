@@ -1,4 +1,4 @@
-# Church Community Builder CHMS Api Examples
+# Pushpay ChMS \[Church Community Builder\] Api Examples
 In this repo are a handful of examples on how to authenticate and make calls
 against our chms api. Our api is a restful, json api with OAuth authentication.
 Most of the examples show at least the system auth flow and making at least one
